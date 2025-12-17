@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import logoImg from './assets/logo.png'
 import heroImg from './assets/FrontPage.jpeg'
+import arquiImg from './assets/ARQUI_1 - Page 1.png'
 
 // Declare Landbot on window for TypeScript
 declare global {
@@ -13,7 +14,11 @@ declare global {
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [activeFeature, setActiveFeature] = useState(0)
-  const [landbotLoaded, setLandbotLoaded] = useState(false)
+  const [, setLandbotLoaded] = useState(false)
+  const [zoomLevel, setZoomLevel] = useState(1)
+  const [isDragging, setIsDragging] = useState(false)
+  const [position, setPosition] = useState({ x: 0, y: 0 })
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const landbotRef = useRef<HTMLDivElement>(null)
   const landbotInstance = useRef<any>(null)
 
@@ -79,17 +84,17 @@ function App() {
       id: 0,
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
         </svg>
       ),
-      title: 'Información ITAM',
-      shortTitle: 'Info',
-      description: '¿Necesitas información sobre caja, servicios web, trámites o contactos importantes? Aquí encuentras todo lo esencial del ITAM.',
+      title: 'Buscar Lugar',
+      shortTitle: 'Buscar',
+      description: '¿Necesitas encontrar un salón, profesor o servicio? El chatbot te guía con un tutorial interactivo usando el mapa en línea creado por la organización estudiantil "Makers".',
       details: [
-        'Ubicación y horarios de caja',
-        'Servicios web y plataformas digitales',
-        'Contactos de departamentos',
-        'Trámites administrativos'
+        'Búsqueda de salones y edificios',
+        'Localización de oficinas de profesores',
+        'Mapa interactivo de Makers',
+        'Tutoriales paso a paso con ejemplos'
       ]
     },
     {
@@ -101,29 +106,29 @@ function App() {
       ),
       title: 'Lugares para Comer',
       shortTitle: 'Comida',
-      description: '¿No sabes dónde comer? Explora las mejores opciones gastronómicas dentro y cerca del campus. Escoge una categoría y recibe recomendaciones personalizadas.',
+      description: 'Descubre dónde comer cerca del ITAM. Elige una categoría (tacos, fonda, pasta o café) y recibe 3 recomendaciones a 500m del campus con información de Google Maps.',
       details: [
-        'Cafeterías del campus',
-        'Restaurantes cercanos',
-        'Opciones económicas',
-        'Comida rápida y saludable'
+        'Categorías: tacos, fonda, pasta, café',
+        'Nombre, rating y dirección del lugar',
+        'Link directo a Google Maps',
+        'Fotos de cada establecimiento'
       ]
     },
     {
       id: 2,
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/>
+          <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4s1.79-4 4-4h.71C7.37 7.69 9.48 6 12 6c3.04 0 5.5 2.46 5.5 5.5v.5H19c1.66 0 3 1.34 3 3s-1.34 3-3 3z"/>
         </svg>
       ),
-      title: 'Mapa ITAM',
-      shortTitle: 'Mapa',
-      description: '¿Estás perdido? ¿Dónde está el salón 201? Utiliza nuestro mapa interactivo para encontrar cualquier ubicación dentro del campus.',
+      title: 'Nuestro Clima',
+      shortTitle: 'Clima',
+      description: 'Consulta el clima actual en los campus del ITAM. Selecciona Río Hondo o Santa Teresa y obtén información en tiempo real de OpenWeather.',
       details: [
-        'Salones y edificios',
-        'Bibliotecas y áreas de estudio',
-        'Servicios estudiantiles',
-        'Estacionamientos y accesos'
+        'Campus Río Hondo y Santa Teresa',
+        'Descripción del clima actual',
+        'Temperatura y sensación térmica',
+        'Porcentaje de humedad'
       ]
     },
     {
@@ -133,14 +138,48 @@ function App() {
           <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/>
         </svg>
       ),
-      title: 'Horarios ITAM',
-      shortTitle: 'Horarios',
-      description: '¿No sabes cómo armar tu horario para el siguiente semestre? Te ayudamos a planificar tus materias de manera óptima.',
+      title: 'Planear Horario',
+      shortTitle: 'Horario',
+      description: 'Aprende a planear tu horario del próximo semestre. Accede a un video tutorial de horarios.itam y documentación detallada para inscribir tus materias.',
       details: [
-        'Planificador de materias',
-        'Horarios disponibles',
-        'Evita traslapes',
-        'Guarda tus horarios favoritos'
+        'Video tutorial de horarios.itam',
+        'Guía para inscripción de materias',
+        'Consejos para evitar traslapes',
+        'Documentación paso a paso'
+      ]
+    },
+    {
+      id: 4,
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+        </svg>
+      ),
+      title: 'Revisar Calificaciones',
+      shortTitle: 'Califics',
+      description: 'Consulta tus calificaciones de finales o semestres anteriores. Te guiamos con capturas de pantalla, pasos detallados y links para trámites oficiales o consultas personales.',
+      details: [
+        'Calificaciones de periodo de finales',
+        'Historial de otros semestres',
+        'Proceso para trámites oficiales',
+        'Capturas y links de referencia'
+      ]
+    },
+    {
+      id: 5,
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+        </svg>
+      ),
+      title: 'Información de Caja',
+      shortTitle: 'Caja',
+      description: 'Gestiona tus pagos y trámites de caja. Consulta tu estado de cuenta, calendario de pagos 2025 o información sobre otros trámites con videos, links y contactos.',
+      details: [
+        'Estado de cuenta y pago de adeudos',
+        'Calendario de pagos 2025',
+        'Servicio presencial y correos',
+        'Becas, pagos y dirección escolar'
       ]
     }
   ]
@@ -316,11 +355,11 @@ function App() {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+        <div className="modal-overlay" onClick={() => { setIsModalOpen(false); setZoomLevel(1); setPosition({ x: 0, y: 0 }); }}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <button 
               className="modal-close"
-              onClick={() => setIsModalOpen(false)}
+              onClick={() => { setIsModalOpen(false); setZoomLevel(1); setPosition({ x: 0, y: 0 }); }}
               aria-label="Cerrar"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -328,13 +367,60 @@ function App() {
               </svg>
             </button>
             <h3 className="modal-title">Diagrama del Sistema</h3>
+            <div className="zoom-controls">
+              <button 
+                className="zoom-btn" 
+                onClick={() => { setZoomLevel(z => Math.max(0.5, z - 0.25)); }}
+                disabled={zoomLevel <= 0.5}
+                title="Reducir zoom"
+              >
+                −
+              </button>
+              <span className="zoom-level">{Math.round(zoomLevel * 100)}%</span>
+              <button 
+                className="zoom-btn" 
+                onClick={() => { setZoomLevel(z => Math.min(4, z + 0.25)); }}
+                disabled={zoomLevel >= 4}
+                title="Aumentar zoom"
+              >
+                +
+              </button>
+              <button 
+                className="zoom-btn reset-btn" 
+                onClick={() => { setZoomLevel(1); setPosition({ x: 0, y: 0 }); }}
+                title="Restablecer zoom"
+              >
+                ↺
+              </button>
+            </div>
             <div className="modal-content">
-              <div className="diagram-placeholder">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="#1a3c34">
-                  <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
-                </svg>
-                <p>Diagrama del Sistema Farah</p>
-                <span className="placeholder-label">[Imagen placeholder]</span>
+              <div 
+                className="diagram-container"
+                onMouseDown={(e) => {
+                  if (zoomLevel > 1) {
+                    setIsDragging(true);
+                    setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
+                  }
+                }}
+                onMouseMove={(e) => {
+                  if (isDragging && zoomLevel > 1) {
+                    setPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
+                  }
+                }}
+                onMouseUp={() => setIsDragging(false)}
+                onMouseLeave={() => setIsDragging(false)}
+                style={{ cursor: zoomLevel > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
+              >
+                <img 
+                  src={arquiImg} 
+                  alt="Arquitectura del Sistema Farah" 
+                  className="architecture-image" 
+                  style={{ 
+                    transform: `scale(${zoomLevel}) translate(${position.x / zoomLevel}px, ${position.y / zoomLevel}px)`,
+                    transformOrigin: 'center center'
+                  }}
+                  draggable={false}
+                />
               </div>
             </div>
           </div>
